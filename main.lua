@@ -14,6 +14,8 @@ input = baton.new(controls, love.joystick.getJoysticks()[1])
 
 
 function love.load()
+  love.physics.setMeter(64) -- 1m = 64px
+  world = love.physics.newWorld(0, 0, true)
   camera = gamera.new(0, 0, 2000, 2000)
   -- create light world
 	lightWorld = LightWorld({
@@ -21,7 +23,11 @@ function love.load()
   })
 
   -- Player
-  player = {x = 0, y = 0, speed = 1500, slide = 1, img = nil, light = nil}
+  player = {speed = 1500,}
+  player.body = love.physics.newBody(world, 650/2, 650/2, "dynamic")
+  player.body:setLinearDamping(15)
+  player.shape = love.physics.newCircleShape(20)
+  player.fixture = love.physics.newFixture(player.body, player.shape, 1)
   player.img = love.graphics.newImage("assets/bluelight.png")
   player.light = lightWorld:newLight(0, 0, 20, 200, 40, 300)
   player.light:setGlowStrength(0.5)
@@ -32,15 +38,13 @@ function love.load()
   pointer.img = love.graphics.newImage("assets/pointer.png")
   pointer.light = lightWorld:newLight(0, 0, 200, 20, 40, 300)
   pointer.light:setGlowStrength(0.3)
+
+  love.graphics.setBackgroundColor(104, 136, 248)
 end
 
 function love.update(dt)
-  flux.update(dt)
+  world:update(dt)
   input:update()
-
-  if love.keyboard.isDown('escape') then
-  		love.event.push('quit')
-  	end
 
 -- Pointer
   pointer.x = love.mouse.getX()
@@ -50,13 +54,12 @@ function love.update(dt)
 -- Player
   local movementX = (input:get 'right' - input:get 'left')*player.speed
   local movementY = (input:get 'down' - input:get 'up')*player.speed
-  player.x = player.x + (movementX*dt)
-  player.y = player.y + (movementY*dt)
-  player.light:setPosition(player.x, player.y)
-  camera:setPosition(player.x, player.y)
+  player.body:applyForce(movementX, movementY)
+  player.light:setPosition(player.body:getPosition())
+  camera:setPosition(player.body:getPosition())
 
   lightWorld:update(dt)
-  lightWorld:setTranslation(player.x, player.y, 1)
+  lightWorld:setTranslation(player.body:getPosition(), 1)
 end
 
 function love.draw()
@@ -64,5 +67,5 @@ function love.draw()
     lightWorld:draw(function()
     end)
   end)
-  love.graphics.draw(player.img, player.x, player.y)
+  love.graphics.draw(player.img, player.body:getPosition())
 end
