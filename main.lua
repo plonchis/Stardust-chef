@@ -1,5 +1,4 @@
 local baton = require 'baton'
-local flux = require "flux"
 local gamera = require 'gamera'
 local LightWorld = require "light"
 
@@ -51,9 +50,8 @@ function love.update(dt)
 -- Player
   local movementX = (input:get 'right' - input:get 'left')*player.speed
   local movementY = (input:get 'down' - input:get 'up')*player.speed
-  flux.to(player, player.slide, {x = player.x+(movementX*dt), y = player.y+(movementY*dt)})
-  --player.x = player.x + (movementX*dt)
-  --player.y = player.y + (movementY*dt)
+  player.x = player.x + (movementX*dt)
+  player.y = player.y + (movementY*dt)
   player.light:setPosition(player.x, player.y)
   camera:setPosition(player.x, player.y)
 
