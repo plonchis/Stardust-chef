@@ -23,23 +23,27 @@ function love.load()
   })
 
   -- Player
-  player = {speed = 1500,}
+  player = {x = 0, y = 0, speed = 2000}
   player.body = love.physics.newBody(world, 650/2, 650/2, "dynamic")
-  player.body:setLinearDamping(15)
+  player.body:setLinearDamping(player.speed/100)
   player.shape = love.physics.newCircleShape(20)
   player.fixture = love.physics.newFixture(player.body, player.shape, 1)
-  player.img = love.graphics.newImage("assets/bluelight.png")
+  player.img = love.graphics.newImage("assets/ainu.png")
+  player.width = player.img:getWidth()
+  player.height = player.img:getHeight()
   player.light = lightWorld:newLight(0, 0, 20, 200, 40, 300)
   player.light:setGlowStrength(0.5)
 
   -- Pointer
 
-  pointer = {x = 0, y = 0, img = nil, light = nil}
+  pointer = {x = 0, y = 0, range = 10}
   pointer.img = love.graphics.newImage("assets/pointer.png")
+  pointer.width = pointer.img:getWidth()
+  pointer.height = pointer.img:getHeight()
   pointer.light = lightWorld:newLight(0, 0, 200, 20, 40, 300)
   pointer.light:setGlowStrength(0.3)
 
-  love.graphics.setBackgroundColor(104, 136, 248)
+  love.graphics.setBackgroundColor(50, 70, 150)
 end
 
 function love.update(dt)
@@ -47,6 +51,7 @@ function love.update(dt)
   input:update()
 
 -- Pointer
+
   pointer.x = love.mouse.getX()
   pointer.y = love.mouse.getY()
   pointer.light:setPosition(pointer.x, pointer.y)
@@ -54,12 +59,13 @@ function love.update(dt)
 -- Player
   local movementX = (input:get 'right' - input:get 'left')*player.speed
   local movementY = (input:get 'down' - input:get 'up')*player.speed
+  player.x, player.y = player.body:getPosition()
   player.body:applyForce(movementX, movementY)
-  player.light:setPosition(player.body:getPosition())
-  camera:setPosition(player.body:getPosition())
+  player.light:setPosition(player.x, player.y)
+  camera:setPosition(player.x, player.y)
 
   lightWorld:update(dt)
-  lightWorld:setTranslation(player.body:getPosition(), 1)
+  lightWorld:setTranslation(player.x, player.y, 1)
 end
 
 function love.draw()
@@ -67,5 +73,6 @@ function love.draw()
     lightWorld:draw(function()
     end)
   end)
-  love.graphics.draw(player.img, player.body:getPosition())
+  love.graphics.draw(player.img, player.x, player.y, 0, 1, 1, player.width / 2, player.height / 2)
+  love.graphics.draw(pointer.img, pointer.x, pointer.y, 0, 0.5, 0.5, pointer.width / 2, pointer.height / 2)
 end
