@@ -3,12 +3,12 @@ local gamera = require 'gamera'
 local LightWorld = require "light"
 
 local controls = {
-  left = {'key:left', 'axis:leftx-', 'button:dpleft'},
-  right = {'key:right', 'axis:leftx+', 'button:dpright'},
-  up = {'key:up', 'axis:lefty-', 'button:dpup'},
-  down = {'key:down', 'axis:lefty+', 'button:dpdown'},
-  primary = {'sc:x', 'button:a'},
-  secondary = {'sc:z', 'button:x'},
+  left = {'sc:a', 'axis:leftx-', 'button:dpleft'},
+  right = {'sc:d', 'axis:leftx+', 'button:dpright'},
+  up = {'sc:w', 'axis:lefty-', 'button:dpup'},
+  down = {'sc:s', 'axis:lefty+', 'button:dpdown'},
+  primary = {'sc:e', 'mouse:1', 'button:a'},
+  secondary = {'sc:f', 'mouse:1', 'button:x'},
 }
 input = baton.new(controls, love.joystick.getJoysticks()[1])
 
@@ -36,7 +36,7 @@ function love.load()
 
   -- Pointer
 
-  pointer = {x = 0, y = 0, range = 10}
+  pointer = {x = 0, y = 0, range = 50}
   pointer.img = love.graphics.newImage("assets/pointer.png")
   pointer.width = pointer.img:getWidth()
   pointer.height = pointer.img:getHeight()
@@ -46,14 +46,27 @@ function love.load()
   love.graphics.setBackgroundColor(50, 70, 150)
 end
 
+function math.dist(x1,y1, x2,y2) return ((x2-x1)^2+(y2-y1)^2)^0.5 end
+function math.angle(x1,y1, x2,y2) return math.atan2(y2-y1, x2-x1) end
+function math.clamp(low, n, high) return math.min(math.max(low, n), high) end
+function math.coords(x,y, dist,angle) return x - math.cos(angle) * dist, y - math.sin(angle) * dist end
+
 function love.update(dt)
   world:update(dt)
   input:update()
 
 -- Pointer
 
-  pointer.x = love.mouse.getX()
-  pointer.y = love.mouse.getY()
+  local mouse = {x = love.mouse.getX(), y = love.mouse.getY()}
+  local window = {x = love.graphics.getWidth(), y = love.graphics.getHeight()}
+  local cursorBox = {size = math.min(window.y, window.x)}
+  cursorBox.borderY = (window.y-cursorBox.size)/2
+  cursorBox.borderX = (window.x-cursorBox.size)/2
+  mouse.x = math.clamp(cursorBox.borderX, mouse.x, cursorBox.borderX + cursorBox.size)
+  mouse.y = math.clamp(cursorBox.borderY, mouse.y, cursorBox.borderY + cursorBox.size)
+  mouse.distance = math.dist(mouse.x, mouse.y, window.x/2, window.y/2)
+  mouse.angle = math.angle(mouse.x,mouse.y,window.x/2,window.y/2)
+  pointer.x, pointer.y = math.coords(player.x, player.y, (mouse.distance/100) * pointer.range, mouse.angle)
   pointer.light:setPosition(pointer.x, pointer.y)
 
 -- Player
