@@ -25,11 +25,12 @@ function love.load()
   world = love.physics.newWorld(0, 0, true)
   camera = gamera.new(0, 0, 2000, 2000)
 	lightWorld = LightWorld({
-    ambient = {80,80,80},
+    ambient = {150,150,150},
     refractionStrength = 32.0,
     reflectionVisibility = 0.75,
   })
-
+  cursor = love.mouse.newCursor("assets/cursor.png", 2, 2)
+  love.mouse.setCursor(cursor)
   -- Player
   player = {x = 0, y = 0, speed = 2000}
   player.body = love.physics.newBody(world, 650/2, 650/2, "dynamic")
@@ -49,7 +50,7 @@ function love.load()
 
   -- Create lights
   pointer.light = lightWorld:newLight(0, 0, 200, 100, 40, 300)
-  pointer.light:setGlowStrength(0.7)
+  pointer.light:setGlowStrength(0.5)
 
   -- Create shadow bodys
   player.shadow = lightWorld:newImage(player.img, 64,64,24,6)
@@ -71,6 +72,9 @@ function love.update(dt)
   pointer.angle = math.angle(mouse.x,mouse.y,window.x/2,window.y/2)
   pointer.x, pointer.y = math.coords(player.x, player.y, (pointer.distance/100) * pointer.range, pointer.angle)
   pointer.light:setPosition(pointer.x, pointer.y)
+  if pointer.distance<mouse.distance then
+    love.mouse.setVisible(true)
+  else love.mouse.setVisible(false) end
 
 -- Player
   local movementX = (input:get 'right' - input:get 'left')*player.speed
