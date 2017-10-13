@@ -59,14 +59,10 @@ function love.update(dt)
 
   local mouse = {x = love.mouse.getX(), y = love.mouse.getY()}
   local window = {x = love.graphics.getWidth(), y = love.graphics.getHeight()}
-  local cursorBox = {size = math.min(window.y, window.x)}
-  cursorBox.borderY = (window.y-cursorBox.size)/2
-  cursorBox.borderX = (window.x-cursorBox.size)/2
-  mouse.x = math.clamp(cursorBox.borderX, mouse.x, cursorBox.borderX + cursorBox.size)
-  mouse.y = math.clamp(cursorBox.borderY, mouse.y, cursorBox.borderY + cursorBox.size)
   mouse.distance = math.dist(mouse.x, mouse.y, window.x/2, window.y/2)
-  mouse.angle = math.angle(mouse.x,mouse.y,window.x/2,window.y/2)
-  pointer.x, pointer.y = math.coords(player.x, player.y, (mouse.distance/100) * pointer.range, mouse.angle)
+  pointer.distance = math.clamp(0, mouse.distance, math.min(window.y, window.x)/2)
+  pointer.angle = math.angle(mouse.x,mouse.y,window.x/2,window.y/2)
+  pointer.x, pointer.y = math.coords(player.x, player.y, (pointer.distance/100) * pointer.range, pointer.angle)
   pointer.light:setPosition(pointer.x, pointer.y)
 
 -- Player
