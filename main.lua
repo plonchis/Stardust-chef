@@ -2,6 +2,7 @@ local baton = require 'baton'
 local gamera = require 'gamera'
 local LightWorld = require "light"
 
+-- Controls --
 local controls = {
   left = {'sc:a', 'axis:leftx-', 'button:dpleft'},
   right = {'sc:d', 'axis:leftx+', 'button:dpright'},
@@ -12,14 +13,21 @@ local controls = {
 }
 input = baton.new(controls, love.joystick.getJoysticks()[1])
 
+-- Math functions --
+function math.dist(x1,y1, x2,y2) return ((x2-x1)^2+(y2-y1)^2)^0.5 end
+function math.angle(x1,y1, x2,y2) return math.atan2(y2-y1, x2-x1) end
+function math.clamp(low, n, high) return math.min(math.max(low, n), high) end
+function math.coords(x,y, dist,angle) return x - math.cos(angle) * dist, y - math.sin(angle) * dist end
 
+-- Load --
 function love.load()
   love.physics.setMeter(64) -- 1m = 64px
   world = love.physics.newWorld(0, 0, true)
   camera = gamera.new(0, 0, 2000, 2000)
-  -- create light world
 	lightWorld = LightWorld({
-    ambient = {55,55,55},
+    ambient = {80,80,80},
+    refractionStrength = 32.0,
+    reflectionVisibility = 0.75,
   })
 
   -- Player
@@ -31,8 +39,6 @@ function love.load()
   player.img = love.graphics.newImage("assets/ainu.png")
   player.width = player.img:getWidth()
   player.height = player.img:getHeight()
-  player.light = lightWorld:newLight(0, 0, 20, 200, 40, 300)
-  player.light:setGlowStrength(0.5)
 
   -- Pointer
 
@@ -40,18 +46,19 @@ function love.load()
   pointer.img = love.graphics.newImage("assets/pointer.png")
   pointer.width = pointer.img:getWidth()
   pointer.height = pointer.img:getHeight()
-  pointer.light = lightWorld:newLight(0, 0, 200, 20, 40, 300)
-  pointer.light:setGlowStrength(0.3)
 
-  love.graphics.setBackgroundColor(50, 70, 150)
+  -- Create lights
+  pointer.light = lightWorld:newLight(0, 0, 200, 100, 40, 300)
+  pointer.light:setGlowStrength(0.7)
+
+  -- Create shadow bodys
+  player.shadow = lightWorld:newImage(player.img, 64,64,24,6)
+
 end
 
-function math.dist(x1,y1, x2,y2) return ((x2-x1)^2+(y2-y1)^2)^0.5 end
-function math.angle(x1,y1, x2,y2) return math.atan2(y2-y1, x2-x1) end
-function math.clamp(low, n, high) return math.min(math.max(low, n), high) end
-function math.coords(x,y, dist,angle) return x - math.cos(angle) * dist, y - math.sin(angle) * dist end
-
 function love.update(dt)
+  love.window.setTitle("Stardust chef (FPS:" .. love.timer.getFPS() .. ")")
+
   world:update(dt)
   input:update()
 
@@ -70,18 +77,20 @@ function love.update(dt)
   local movementY = (input:get 'down' - input:get 'up')*player.speed
   player.x, player.y = player.body:getPosition()
   player.body:applyForce(movementX, movementY)
-  player.light:setPosition(player.x, player.y)
-  camera:setPosition(player.x, player.y)
+  player.shadow:setPosition(player.x, player.y)
 
+  camera:setPosition(player.x, player.y)
   lightWorld:update(dt)
-  lightWorld:setTranslation(player.x, player.y, 1)
+  --lightWorld:setTranslation(player.x, player.y, 1)
 end
 
 function love.draw()
   camera:draw(function(l,t,w,h)
     lightWorld:draw(function()
+      love.graphics.setColor(255, 255, 255)
+      love.graphics.rectangle("fill", 0, 0, love.graphics.getWidth(), love.graphics.getHeight())
+      love.graphics.draw(player.img, player.x, player.y, 0, 1, 1, player.width / 2, player.height / 2)
+      love.graphics.draw(pointer.img, pointer.x, pointer.y, 0, 0.5, 0.5, pointer.width / 2, pointer.height / 2)
     end)
   end)
-  love.graphics.draw(player.img, player.x, player.y, 0, 1, 1, player.width / 2, player.height / 2)
-  love.graphics.draw(pointer.img, pointer.x, pointer.y, 0, 0.5, 0.5, pointer.width / 2, pointer.height / 2)
 end
