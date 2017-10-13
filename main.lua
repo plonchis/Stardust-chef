@@ -38,22 +38,20 @@ function love.load()
   player.shape = love.physics.newCircleShape(20)
   player.fixture = love.physics.newFixture(player.body, player.shape, 1)
   player.img = love.graphics.newImage("assets/ainu.png")
-  player.width = player.img:getWidth()
-  player.height = player.img:getHeight()
+  player.width, player.height = player.img:getWidth(), player.img:getHeight()
 
   -- Pointer
 
   pointer = {x = 0, y = 0, range = 50}
   pointer.img = love.graphics.newImage("assets/pointer.png")
-  pointer.width = pointer.img:getWidth()
-  pointer.height = pointer.img:getHeight()
+  pointer.width, pointer.height = pointer.img:getWidth(), pointer.img:getHeight()
 
   -- Create lights
   pointer.light = lightWorld:newLight(0, 0, 200, 100, 40, 300)
   pointer.light:setGlowStrength(0.5)
 
   -- Create shadow bodys
-  player.shadow = lightWorld:newImage(player.img, 64,64,24,6)
+  player.shadow = lightWorld:newImage(player.img, player.x, player.y)
 
 end
 
