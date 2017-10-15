@@ -1,6 +1,7 @@
 local Baton = require 'baton'
 local Camera = require 'camera'
 local LightWorld = require "light"
+local Math = require "math"
 
 -- Controls --
 local controls = {
@@ -15,95 +16,69 @@ local controls = {
 }
 input = Baton.new(controls, love.joystick.getJoysticks()[1])
 
--- Math functions --
+-- Math
 function math.dist(x1,y1, x2,y2) return ((x2-x1)^2+(y2-y1)^2)^0.5 end
 function math.angle(x1,y1, x2,y2) return math.atan2(y2-y1, x2-x1) end
 function math.clamp(low, n, high) return math.min(math.max(low, n), high) end
 function math.coords(x,y, dist,angle) return x - math.cos(angle) * dist, y - math.sin(angle) * dist end
 
--- Load --
+
 function love.load()
+  -- Window
   love.window.setMode(800, 600, {resizable=true, minwidth=400, minheight=300})
+  window = {x = love.graphics.getWidth(), y = love.graphics.getHeight()}
+
+  -- Physics
   love.physics.setMeter(64) -- 1m = 64px
   world = love.physics.newWorld(0, 0, true)
+
+  -- LightWorld
 	lightWorld = LightWorld({
-    ambient = {150,150,150},
+    ambient = {200,200,200},
     refractionStrength = 32.0,
     reflectionVisibility = 0.75,
   })
-  cursor = love.mouse.newCursor("assets/cursor.png", 2, 2)
-  love.mouse.setCursor(cursor)
-  -- Player
-  player = {x = 0, y = 0, speed = 2000}
-  player.body = love.physics.newBody(world, 0, 0, "dynamic")
-  player.body:setLinearDamping(player.speed/100)
-  player.shape = love.physics.newCircleShape(20)
-  player.fixture = love.physics.newFixture(player.body, player.shape, 1)
-  player.img = love.graphics.newImage("assets/ainu.png")
-  player.width, player.height = player.img:getWidth(), player.img:getHeight()
+  -- Hardware cursor
+  love.mouse.setCursor(love.mouse.newCursor("assets/cursor.png", 2, 2))
 
-  -- Pointer
-
-  pointer = {x = 0, y = 0, range = 50}
-  pointer.img = love.graphics.newImage("assets/pointer.png")
-  pointer.width, pointer.height = pointer.img:getWidth(), pointer.img:getHeight()
-
-  -- Create lights
-  pointer.light = lightWorld:newLight(0, 0, 200, 100, 40, 300)
-  pointer.light:setGlowStrength(0.5)
-
-  -- Create shadow bodys
-  player.shadow = lightWorld:newImage(player.img,0,0)
-  player.shadow:setNormalMap(player.shadow:generateNormalMap(1))
+  player = require "player"
+  pointer = require "pointer"
 
   -- Camera
-  cam = Camera.new(player.x, player.y)
+  camera = Camera.new(player.x, player.y)
+  function camera:set(x,y,scale)
+    self:zoomTo(scale)
+    self:lockPosition(x, y, Camera.smooth.damped(10))
+    lightWorld:setTranslation(-x*scale+window.x/2, -y*scale+window.y/2, scale)
+  end
 end
 
 function love.update(dt)
   love.window.setTitle("Stardust chef (FPS:" .. love.timer.getFPS() .. ")")
   world:update(dt)
   input:update()
-  window = {x = love.graphics.getWidth(), y = love.graphics.getHeight()}
+  lightWorld:update(dt)
+  pointer:update()
 
   -- Player
-  local movementX = (input:get 'right' - input:get 'left')*player.speed
-  local movementY = (input:get 'down' - input:get 'up')*player.speed
-  player.body:applyForce(movementX, movementY)
-  player.x, player.y = player.body:getPosition()
-  player.shadow:setPosition(player.x, player.y)
+  local x, y = (input:get 'right' - input:get 'left')*player.speed, (input:get 'down' - input:get 'up')*player.speed
+  player:move(x, y)
   -- Camera
-  cam:zoomTo(cam.scale+(input:get 'zoomout' - input:get 'zoomin')*dt/10)
-
-  cam:lockPosition(player.x, player.y, Camera.smooth.damped(10))
-
--- Pointer
-
-  local mouse = {x = love.mouse.getX(), y = love.mouse.getY()}
-  mouse.distance = math.dist(mouse.x, mouse.y, window.x/2, window.y/2)
-  pointer.distance = math.clamp(0, mouse.distance, math.min(window.y, window.x)/2)
-  pointer.angle = math.angle(mouse.x,mouse.y,window.x/2,window.y/2)
-  pointer.x, pointer.y = math.coords(player.x, player.y, (pointer.distance/100) * pointer.range, pointer.angle)
-  pointer.light:setPosition(pointer.x, pointer.y)
-  if pointer.distance<mouse.distance then
-    love.mouse.setVisible(true)
-  else love.mouse.setVisible(false) end
-
-  lightWorld:update(dt)
-  lightWorld:setTranslation(-cam.x*cam.scale+window.x/2, -cam.y*cam.scale+window.y/2, cam.scale)
+  camera:set(player.x, player.y, camera.scale+(input:get 'zoomout' - input:get 'zoomin')*dt/10)
 end
 
 function love.draw()
-  cam:attach()
+  camera:attach()
     lightWorld:draw(function()
       love.graphics.setColor(255, 255, 255)
-      love.graphics.rectangle("fill", 0, 0, 2000, 2000)
+      love.graphics.rectangle("fill", -1000, -1000, 2000, 2000)
       love.graphics.draw(player.img, player.x, player.y, 0, 1, 1, player.width / 2, player.height / 2)
       love.graphics.draw(pointer.img, pointer.x, pointer.y, 0, 0.5, 0.5, pointer.width / 2, pointer.height / 2)
     end)
-  cam:detach()
+  camera:detach()
 end
 
 function love.resize(w, h)
-  lightWorld:refreshScreenSize(love.graphics.getWidth(), love.graphics.getHeight())
+  window = {x = love.graphics.getWidth(), y = love.graphics.getHeight()}
+  lightWorld:refreshScreenSize(window.x, window.y)
 end
