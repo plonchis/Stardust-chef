@@ -73,8 +73,9 @@ function love.update(dt)
   player.x, player.y = player.body:getPosition()
   player.shadow:setPosition(player.x, player.y)
   -- Camera
-  cam:lookAt(player.x, player.y)
   cam:zoomTo(cam.scale+(input:get 'zoomout' - input:get 'zoomin')*dt/10)
+  --cam:lookAt(player.x, player.y)
+  cam:lockPosition(player.x, player.y, Camera.smooth.damped(10))
 
 -- Pointer
 
@@ -89,7 +90,7 @@ function love.update(dt)
   else love.mouse.setVisible(false) end
 
   lightWorld:update(dt)
---lightWorld:setTranslation(-player.x+window.x/2, -player.y+window.y/2, cam.scale)
+  lightWorld:setTranslation(-cam.x*cam.scale+window.x/2, -cam.y*cam.scale+window.y/2, cam.scale)
 end
 
 function love.draw()
