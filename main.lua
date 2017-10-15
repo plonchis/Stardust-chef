@@ -57,7 +57,7 @@ function love.load()
   player.shadow:setNormalMap(player.shadow:generateNormalMap(1))
 
   -- Camera
-  cam = Camera.new()
+  cam = Camera.new(player.x, player.y)
 end
 
 function love.update(dt)
@@ -74,7 +74,7 @@ function love.update(dt)
   player.shadow:setPosition(player.x, player.y)
   -- Camera
   cam:zoomTo(cam.scale+(input:get 'zoomout' - input:get 'zoomin')*dt/10)
-  --cam:lookAt(player.x, player.y)
+
   cam:lockPosition(player.x, player.y, Camera.smooth.damped(10))
 
 -- Pointer
@@ -102,4 +102,8 @@ function love.draw()
       love.graphics.draw(pointer.img, pointer.x, pointer.y, 0, 0.5, 0.5, pointer.width / 2, pointer.height / 2)
     end)
   cam:detach()
+end
+
+function love.resize(w, h)
+  lightWorld:refreshScreenSize(love.graphics.getWidth(), love.graphics.getHeight())
 end
