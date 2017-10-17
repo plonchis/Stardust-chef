@@ -8,7 +8,7 @@ pointer = {
 pointer.width, pointer.height = pointer.img:getWidth(), pointer.img:getHeight()
 pointer.light:setGlowStrength(0.5)
 function pointer:update()
-  local mouse = {x = love.mouse.getX(), y = love.mouse.getY()}
+  local mouse = {x = love.mouse.getX()+window.offsetX, y = love.mouse.getY()}
   mouse.distance = math.dist(mouse.x, mouse.y, window.x/2, window.y/2)
   self.distance = math.clamp(0, mouse.distance, math.min(window.y, window.x)/2)
   self.angle = math.angle(mouse.x,mouse.y,window.x/2,window.y/2)
