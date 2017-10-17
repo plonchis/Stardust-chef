@@ -1,7 +1,6 @@
-local Baton = require 'baton'
-local Camera = require 'camera'
+local Baton = require "baton"
+local Camera = require "camera"
 local LightWorld = require "light"
-local Math = require "math"
 
 -- Controls --
 local controls = {
@@ -43,6 +42,7 @@ function love.load()
 
   player = require "player"
   pointer = require "pointer"
+  items = require "items"
 
   -- Camera
   camera = Camera.new(player.x, player.y)
