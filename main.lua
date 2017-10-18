@@ -91,7 +91,9 @@ function love.draw()
   local innerMargin = inventory.margin + inventory.padding
   local innerSize = inventory.width-innerMargin*2
   love.graphics.setColor(200, 180, 170)
-  love.graphics.rectangle("fill", innerMargin, innerMargin, innerSize, innerSize)
+  for i, v in pairs(inventory.items) do
+    love.graphics.rectangle("fill", innerMargin, innerMargin + (innerSize+inventory.padding)*(i-1), innerSize, innerSize)
+  end
 end
 
 function love.resize(w, h)

@@ -26,51 +26,56 @@ function itemClass:cook(method)
   end
 end
 
-for i, v in ipairs(Items) do
-  local item = v
-  setmetatable(item, { __index = itemClass })
-  items[i] = item
+items = Items
+for i, v in pairs(items) do
+  setmetatable(v, { __index = itemClass })
 end
 
 -- Inventory
 inventory = {
+  items = {},
   width = -window.offsetX,
   height = window.y,
   padding = 10,
   margin = 10
 }
-function inventory:addItem(item, amount, place)
-  if items[item] then
-    if self[item] then
-      self[item].amount = self[item].amount + amount
+function inventory:addItem(itemName, amount, place)
+  if items[itemName] then
+    if self.items[itemName] then
+      self.items[itemName].amount = self.items[itemName].amount + amount
     else
-      item.amount = amount
+      item = {
+        name = itemName,
+        amount = amount
+      }
       if place then
-        table.insert(self, place, item)
+        table.insert(self.items, place, item)
       else
-        table.insert(self, item)
+        table.insert(self.items, item)
       end
     end
     return true
   else
-    print("Can't add item " + item)
+    print("Can't add item ", itemName)
     return false
   end
 end
 
-function inventory:removeItem(item, amount)
-  if items[item] and self[item] then
-    if self[item].amount > amount then
-      self[item].amount = self[item].amount - amount
+function inventory:removeItem(itemName, amount)
+  if items[itemName] and self[itemName] then
+    if self[itemName].amount > amount then
+      self[itemName].amount = self[itemName].amount - amount
       return true
-    elseif self[item].amount == amount then
-      table.remove(self, item)
+    elseif self[itemName].amount == amount then
+      table.remove(self, itemName)
       return true
     else
-      print("Can't remove item " + item)
+      print("Can't remove item ", itemName)
       return false
     end
   end
 end
+inventory:addItem("carrot", 2)
+inventory:addItem("onion", 4)
 
 return items
