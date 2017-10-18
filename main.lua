@@ -52,11 +52,12 @@ function love.load()
   -- Camera
   camera = Camera.new(player.x, player.y)
   function camera:set(x,y,scale)
-    x = x+window.offsetX
+    x = x + window.offsetX/2
     self:zoomTo(scale)
     self:lockPosition(x, y, Camera.smooth.damped(10))
-    lightWorld:setTranslation(-x*scale+window.x/2, -y*scale+window.y/2, scale)
+    lightWorld:setTranslation(-self.x*scale+window.x/2, -self.y*scale+window.y/2, scale)
   end
+
 end
 
 -- Update
@@ -70,7 +71,7 @@ function love.update(dt)
   -- Player
   local x, y = (input:get 'right' - input:get 'left')*player.speed, (input:get 'down' - input:get 'up')*player.speed
   player:move(x, y)
-  -- Cameraeeeeeee
+  -- Camera
   camera:set(player.x, player.y, camera.scale+(input:get 'zoomout' - input:get 'zoomin')*dt/10)
 end
 
@@ -83,7 +84,14 @@ function love.draw()
       love.graphics.draw(pointer.img, pointer.x, pointer.y, 0, 0.5, 0.5, pointer.width / 2, pointer.height / 2)
     end)
   camera:detach()
-love.graphics.rectangle("fill", 0, 0, -window.offsetX, window.y)
+
+  --Inventory
+  love.graphics.setColor(255, 240, 230)
+  love.graphics.rectangle("fill", inventory.margin, inventory.margin, inventory.width-inventory.margin*2, inventory.height-inventory.margin*2)
+  local innerMargin = inventory.margin + inventory.padding
+  local innerSize = inventory.width-innerMargin*2
+  love.graphics.setColor(200, 180, 170)
+  love.graphics.rectangle("fill", innerMargin, innerMargin, innerSize, innerSize)
 end
 
 function love.resize(w, h)
