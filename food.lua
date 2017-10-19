@@ -15,6 +15,7 @@ items.name = {
 ]]--
 
 items.carrot = {
+  img = love.graphics.newImage("assets/carrot.png"),
   quality = 1,
   properties = {temp = 0, texture = 5, elasticity = 1, density = 10},
   flavor = {salty = 5, sweet = 5, sour = 0, acid = 0},
@@ -27,6 +28,7 @@ items.carrot = {
 }
 
 items.onion = {
+  img = love.graphics.newImage("assets/onion.png"),
   quality = 1,
   properties = {temp = 0, texture = 5, elasticity = 1, density = 10},
   flavor = {salty = 5, sweet = 5, sour = 0, acid = 0},

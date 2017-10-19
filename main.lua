@@ -23,7 +23,9 @@ function math.coords(x,y, dist,angle) return x - math.cos(angle) * dist, y - mat
 
 function updateWindow()
   window = {x = love.graphics.getWidth(), y = love.graphics.getHeight()}
-  window.offsetX = -window.x*0.2
+  window.offsetX = math.clamp(-200, -window.x*0.2, -100)
+  local windowScale = math.min(window.y, window.x)/1080
+
 end
 
 function love.load()
@@ -48,13 +50,16 @@ function love.load()
   player = require "player"
   pointer = require "pointer"
   items = require "items"
+  inventory = require "inventory"
+  inventory:refresh()
 
   -- Camera
   camera = Camera.new(player.x, player.y)
   function camera:set(x,y,scale)
+    scale = math.clamp(0.5, scale, 1)
     x = x + window.offsetX/2
-    self:zoomTo(scale)
     self:lockPosition(x, y, Camera.smooth.damped(10))
+    self:zoomTo(scale)
     lightWorld:setTranslation(-self.x*scale+window.x/2, -self.y*scale+window.y/2, scale)
   end
 
@@ -72,7 +77,8 @@ function love.update(dt)
   local x, y = (input:get 'right' - input:get 'left')*player.speed, (input:get 'down' - input:get 'up')*player.speed
   player:move(x, y)
   -- Camera
-  camera:set(player.x, player.y, camera.scale+(input:get 'zoomout' - input:get 'zoomin')*dt/10)
+  local scale = camera.scale+(input:get 'zoomout' - input:get 'zoomin')*dt/2
+  camera:set(player.x, player.y, scale)
 end
 
 function love.draw()
@@ -81,22 +87,14 @@ function love.draw()
       love.graphics.setColor(255, 255, 255)
       love.graphics.rectangle("fill", -1000, -1000, 2000, 2000)
       love.graphics.draw(player.img, player.x, player.y, 0, 1, 1, player.width / 2, player.height / 2)
-      love.graphics.draw(pointer.img, pointer.x, pointer.y, 0, 0.5, 0.5, pointer.width / 2, pointer.height / 2)
+      love.graphics.draw(pointer.img, pointer.x, pointer.y, 0, 1, 1, pointer.width / 2, pointer.height / 2)
     end)
   camera:detach()
-
-  --Inventory
-  love.graphics.setColor(255, 240, 230)
-  love.graphics.rectangle("fill", inventory.margin, inventory.margin, inventory.width-inventory.margin*2, inventory.height-inventory.margin*2)
-  local innerMargin = inventory.margin + inventory.padding
-  local innerSize = inventory.width-innerMargin*2
-  love.graphics.setColor(200, 180, 170)
-  for i, v in pairs(inventory.items) do
-    love.graphics.rectangle("fill", innerMargin, innerMargin + (innerSize+inventory.padding)*(i-1), innerSize, innerSize)
-  end
+  inventory:draw()
 end
 
 function love.resize(w, h)
   updateWindow()
   lightWorld:refreshScreenSize(window.x, window.y)
+  inventory:refresh()
 end
