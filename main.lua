@@ -40,7 +40,7 @@ function love.load()
 
   -- LightWorld
 	lightWorld = LightWorld({
-    ambient = {200,200,200},
+    ambient = {220,220,220},
     refractionStrength = 32.0,
     reflectionVisibility = 0.75,
   })
@@ -62,7 +62,9 @@ function love.load()
     self:zoomTo(scale)
     lightWorld:setTranslation(-self.x*scale+window.x/2, -self.y*scale+window.y/2, scale)
   end
-
+  spawnedItems = {}
+  local item = items.carrot:spawn(200,200)
+  table.insert(spawnedItems, item)
 end
 
 -- Update
@@ -79,6 +81,10 @@ function love.update(dt)
   -- Camera
   local scale = camera.scale+(input:get 'zoomout' - input:get 'zoomin')*dt/2
   camera:set(player.x, player.y, scale)
+
+  for i, v in pairs(spawnedItems) do
+    v:update()
+  end
 end
 
 function love.draw()
@@ -88,6 +94,9 @@ function love.draw()
       love.graphics.rectangle("fill", -1000, -1000, 2000, 2000)
       love.graphics.draw(player.img, player.x, player.y, 0, 1, 1, player.width / 2, player.height / 2)
       love.graphics.draw(pointer.img, pointer.x, pointer.y, 0, 1, 1, pointer.width / 2, pointer.height / 2)
+      for i, v in pairs(spawnedItems) do
+        v:draw()
+      end
     end)
   camera:detach()
   inventory:draw()

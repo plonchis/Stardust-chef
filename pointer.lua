@@ -1,12 +1,12 @@
 pointer = {
   x = 0,
   y = 0,
-  range = 50,
+  range = 100,
   img = love.graphics.newImage("assets/pointer.png"),
   light = lightWorld:newLight(0, 0, 200, 100, 40, 400)
 }
 pointer.width, pointer.height = pointer.img:getWidth(), pointer.img:getHeight()
-pointer.light:setGlowStrength(0.5)
+pointer.light:setGlowStrength(0.3)
 function pointer:update()
   local mouse = {x = love.mouse.getX()+window.offsetX, y = love.mouse.getY()}
   mouse.distance = math.dist(mouse.x, mouse.y, window.x/2, window.y/2)
