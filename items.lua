@@ -34,7 +34,7 @@ function itemClass:spawn (x,y)
   self.fixture = love.physics.newFixture(self.body, self.shape, 0.1)
   self.x, self.y = self.body:getPosition()
   self.shadow = lightWorld:newCircle(self.x,self.y,32)
-
+  self.draggable = true
   return self
 end
 

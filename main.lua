@@ -8,10 +8,14 @@ local controls = {
   right = {'sc:d', 'axis:leftx+', 'button:dpright'},
   up = {'sc:w', 'axis:lefty-', 'button:dpup'},
   down = {'sc:s', 'axis:lefty+', 'button:dpdown'},
+  pointerLeft = {'axis:rightx-'},
+  pointerRight = {'axis:rightx+'},
+  pointerUp = {'axis:righty-'},
+  pointerDown = {'axis:righty+'},
   primary = {'sc:f', 'mouse:1', 'button:a'},
   secondary = {'sc:g', 'mouse:1', 'button:x'},
-  zoomin = {'sc:q', 'axis:triggerleft'},
-  zoomout = {'sc:e', 'axis:triggereight'}
+  zoomin = {'sc:q', 'axis:triggerleft+'},
+  zoomout = {'sc:e', 'axis:triggerright+'}
 }
 input = Baton.new(controls, love.joystick.getJoysticks()[1])
 
@@ -22,9 +26,9 @@ function math.clamp(low, n, high) return math.min(math.max(low, n), high) end
 function math.coords(x,y, dist,angle) return x - math.cos(angle) * dist, y - math.sin(angle) * dist end
 
 function updateWindow()
-  window = {x = love.graphics.getWidth(), y = love.graphics.getHeight()}
-  window.offsetX = math.clamp(-200, -window.x*0.2, -100)
-  local windowScale = math.min(window.y, window.x)/1080
+  window = {width = love.graphics.getWidth(), height = love.graphics.getHeight()}
+  window.offsetX = math.clamp(-200, -window.width*0.2, -100)
+  local windowScale = math.min(window.height, window.width)/1080
 
 end
 
@@ -33,10 +37,10 @@ function love.load()
   love.window.setMode(800, 600, {resizable=true, minwidth=400, minheight=300})
   window = {}
   updateWindow()
-
   -- Physics
   love.physics.setMeter(64) -- 1m = 64px
   world = love.physics.newWorld(0, 0, true)
+  world:setCallbacks(beginContact, endContact, preSolve, postSolve)
 
   -- LightWorld
 	lightWorld = LightWorld({
@@ -60,7 +64,7 @@ function love.load()
     x = x + window.offsetX/2
     self:lockPosition(x, y, Camera.smooth.damped(10))
     self:zoomTo(scale)
-    lightWorld:setTranslation(-self.x*scale+window.x/2, -self.y*scale+window.y/2, scale)
+    lightWorld:setTranslation(-self.x*scale+window.width/2, -self.y*scale+window.height/2, scale)
   end
   spawnedItems = {}
   local item = items.carrot:spawn(200,200)
@@ -78,6 +82,8 @@ function love.update(dt)
   -- Player
   local x, y = (input:get 'right' - input:get 'left')*player.speed, (input:get 'down' - input:get 'up')*player.speed
   player:move(x, y)
+  -- Pointer
+
   -- Camera
   local scale = camera.scale+(input:get 'zoomout' - input:get 'zoomin')*dt/2
   camera:set(player.x, player.y, scale)
@@ -86,6 +92,10 @@ function love.update(dt)
     v:update()
   end
 end
+
+function beginContact(a, b, col)
+end
+
 
 function love.draw()
   camera:attach()
@@ -104,6 +114,6 @@ end
 
 function love.resize(w, h)
   updateWindow()
-  lightWorld:refreshScreenSize(window.x, window.y)
+  lightWorld:refreshScreenSize(window.width, window.height)
   inventory:refresh()
 end

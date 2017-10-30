@@ -7,7 +7,7 @@ inventory.innerMargin = inventory.margin + inventory.padding
 
 function inventory:refresh()
   self.width = -window.offsetX
-  self.height = window.y
+  self.height = window.height
   inventory.innerSize = inventory.width-inventory.innerMargin*2
 end
 
