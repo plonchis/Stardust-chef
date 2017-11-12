@@ -93,9 +93,6 @@ function love.update(dt)
   end
 end
 
-function beginContact(a, b, col)
-end
-
 
 function love.draw()
   camera:attach()

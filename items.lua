@@ -30,11 +30,11 @@ function itemClass:spawn (x,y)
   self.width, self.height = self.img:getWidth(), self.img:getHeight()
   self.body = love.physics.newBody(world, x, y, "dynamic")
   self.body:setLinearDamping(10)
+  self.body:setUserData(draggable)
   self.shape = love.physics.newCircleShape(64)
   self.fixture = love.physics.newFixture(self.body, self.shape, 0.1)
   self.x, self.y = self.body:getPosition()
   self.shadow = lightWorld:newCircle(self.x,self.y,32)
-  self.draggable = true
   return self
 end
 

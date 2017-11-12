@@ -8,6 +8,7 @@ player = {
 }
 player.body:setLinearDamping(player.speed/150)
 player.fixture = love.physics.newFixture(player.body, player.shape, 0.1)
+player.fixture:setSensor(true)
 player.width, player.height = player.img:getWidth(), player.img:getHeight()
 player.shadow = lightWorld:newImage(player.img,0,0,player.width/2,player.width/2)
 function player:move(x,y)

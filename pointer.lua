@@ -23,5 +23,30 @@ function pointer:update()
   if self.distanceFromCenter<mouse.distanceFromCenter then
     love.mouse.setVisible(true)
   else love.mouse.setVisible(false) end
+  if love.mouse.isDown(1) then
+    if not pointer.dragItem then
+      local pointerContacts = pointer.body:getContactList()
+      for i, v in pairs(pointerContacts) do
+        local fix1, fix2 = v:getFixtures()
+        local itemBody = fix2:getBody()
+
+        if itemBody:getUserData() == draggable then
+          pointer.dragItem = itemBody
+          print("Found item")
+          break
+        end
+      end
+    else
+      print("moving item")
+      local itemX, itemY = pointer.dragItem:getPosition()
+      local xMove = (-itemX + pointer.x) *20
+      local yMove = (-itemY + pointer.y) *20
+
+      pointer.dragItem:applyForce(xMove, yMove)
+    end
+  else
+    pointer.dragItem = nil
+  end
 end
+
 return pointer
